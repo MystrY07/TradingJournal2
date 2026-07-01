@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EdgeLog - Futures Trading Journal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <nav class="sidebar">
+        <div class="sidebar-logo">
+            <span class="logo-mark">E</span>
+            <span class="logo-text">EdgeLog</span>
+        </div>
+        <div class="sidebar-nav">
+            <button class="nav-item active" data-view="dashboard">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                </svg>
+                <span>Dashboard</span>
+            </button>
+            <button class="nav-item" data-view="trades">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="8" y1="6" x2="21" y2="6" />
+                    <line x1="8" y1="12" x2="21" y2="12" />
+                    <line x1="8" y1="18" x2="21" y2="18" />
+                    <line x1="3" y1="6" x2="3.01" y2="6" />
+                    <line x1="3" y1="12" x2="3.01" y2="12" />
+                    <line x1="3" y1="18" x2="3.01" y2="18" />
+                </svg>
+                <span>Trades</span>
+            </button>
+            <button class="nav-item" data-view="calendar">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+                <span>Calendar</span>
+            </button>
+            <button class="nav-item" data-view="journal">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                </svg>
+                <span>Journal</span>
+            </button>
+        </div>
+        <div class="sidebar-footer">
+            <button class="nav-item" id="exportBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                <span>Export Data</span>
+            </button>
+            <button class="nav-item" id="importBtn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                <span>Import Data</span>
+            </button>
+            <input type="file" id="importFile" accept=".json" style="display:none">
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <!-- Dashboard View -->
+        <section class="view active" id="dashboardView">
+            <div class="view-header">
+                <div>
+                    <h1>Dashboard</h1>
+                    <p class="view-subtitle">Your trading performance at a glance</p>
+                </div>
+                <button class="btn btn-primary" id="addTradeBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    Log Trade
+                </button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card" id="statNetPL">
+                    <div class="stat-label">Net P&L</div>
+                    <div class="stat-value" id="totalPL">$0.00</div>
+                    <div class="stat-sub" id="plTradeCount">0 trades</div>
+                </div>
+                <div class="stat-card" id="statWinRate">
+                    <div class="stat-label">Win Rate</div>
+                    <div class="stat-value" id="winRate">0%</div>
+                    <div class="stat-sub" id="winLossCount">0W / 0L</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Profit Factor</div>
+                    <div class="stat-value" id="profitFactor">--</div>
+                    <div class="stat-sub">Gross W / Gross L</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Total Trades</div>
+                    <div class="stat-value" id="totalTrades">0</div>
+                    <div class="stat-sub" id="tradePeriod">No trades yet</div>
+                </div>
+            </div>
+
+            <div class="charts-row">
+                <div class="chart-card wide">
+                    <div class="chart-header">
+                        <h3>Equity Curve</h3>
+                        <div class="chart-filters">
+                            <button class="chip active" data-range="all">All</button>
+                            <button class="chip" data-range="30d">30D</button>
+                            <button class="chip" data-range="7d">7D</button>
+                        </div>
+                    </div>
+                    <div class="chart-body">
+                        <canvas id="equityChart"></canvas>
+                        <div class="empty-chart" id="emptyEquity">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="1.5" opacity="0.3">
+                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                            </svg>
+                            <p>Log your first trade to see your equity curve</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-row">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>By Instrument</h3>
+                    </div>
+                    <div class="chart-body">
+                        <div class="breakdown-list" id="instrumentBreakdown"></div>
+                        <div class="empty-chart" id="emptyInstrument">
+                            <p>No trade data yet</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>By Setup</h3>
+                    </div>
+                    <div class="chart-body">
+                        <div class="breakdown-list" id="setupBreakdown"></div>
+                        <div class="empty-chart" id="emptySetup">
+                            <p>No trade data yet</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Performance</h3>
+                    </div>
+                    <div class="chart-body">
+                        <div class="perf-grid">
+                            <div class="perf-item">
+                                <span class="perf-label">Avg Win</span>
+                                <span class="perf-value positive" id="avgWin">--</span>
+                            </div>
+                            <div class="perf-item">
+                                <span class="perf-label">Avg Loss</span>
+                                <span class="perf-value negative" id="avgLoss">--</span>
+                            </div>
+                            <div class="perf-item">
+                                <span class="perf-label">Largest Win</span>
+                                <span class="perf-value positive" id="largestWin">--</span>
+                            </div>
+                            <div class="perf-item">
+                                <span class="perf-label">Largest Loss</span>
+                                <span class="perf-value negative" id="largestLoss">--</span>
+                            </div>
+                            <div class="perf-item">
+                                <span class="perf-label">Avg R:R</span>
+                                <span class="perf-value" id="avgRR">--</span>
+                            </div>
+                            <div class="perf-item">
+                                <span class="perf-label">Expectancy</span>
+                                <span class="perf-value" id="expectancy">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Trades View -->
+        <section class="view" id="tradesView">
+            <div class="view-header">
+                <div>
+                    <h1>Trade Log</h1>
+                    <p class="view-subtitle">All your recorded trades</p>
+                </div>
+                <button class="btn btn-primary" id="addTradeBtn2">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    Log Trade
+                </button>
+            </div>
+
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <select id="filterInstrument" class="filter-select">
+                        <option value="">All Instruments</option>
+                    </select>
+                    <select id="filterDirection" class="filter-select">
+                        <option value="">All Directions</option>
+                        <option value="long">Long</option>
+                        <option value="short">Short</option>
+                    </select>
+                    <select id="filterSetup" class="filter-select">
+                        <option value="">All Setups</option>
+                    </select>
+                    <select id="filterResult" class="filter-select">
+                        <option value="">All Results</option>
+                        <option value="win">Winners</option>
+                        <option value="loss">Losers</option>
+                        <option value="breakeven">Breakeven</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <input type="date" id="filterDateFrom" class="filter-input" placeholder="From">
+                    <input type="date" id="filterDateTo" class="filter-input" placeholder="To">
+                </div>
+            </div>
+
+            <div class="trades-table-container">
+                <table class="trades-table">
+                    <thead>
+                        <tr>
+                            <th class="sortable" data-sort="date">Date <span class="sort-icon"></span></th>
+                            <th class="sortable" data-sort="instrument">Instrument <span class="sort-icon"></span></th>
+                            <th>Dir</th>
+                            <th class="sortable" data-sort="entry">Entry <span class="sort-icon"></span></th>
+                            <th class="sortable" data-sort="exit">Exit <span class="sort-icon"></span></th>
+                            <th>Qty</th>
+                            <th class="sortable" data-sort="pnl">P&L <span class="sort-icon"></span></th>
+                            <th>Setup</th>
+                            <th>Tags</th>
+                            <th>Rating</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tradesTableBody">
+                    </tbody>
+                </table>
+                <div class="empty-state" id="emptyTrades">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"
+                        opacity="0.25">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                    </svg>
+                    <p>No trades recorded yet</p>
+                    <button class="btn btn-primary" id="addTradeBtn3">Log Your First Trade</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Calendar View -->
+        <section class="view" id="calendarView">
+            <div class="view-header">
+                <div>
+                    <h1>Calendar</h1>
+                    <p class="view-subtitle">Daily P&L heatmap</p>
+                </div>
+                <div class="calendar-nav">
+                    <button class="btn btn-ghost" id="calPrev">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="15 18 9 12 15 6" />
+                        </svg>
+                    </button>
+                    <span class="cal-month" id="calMonth"></span>
+                    <button class="btn btn-ghost" id="calNext">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                    </button>
+                    <button class="btn btn-ghost" id="calToday">Today</button>
+                </div>
+            </div>
+
+            <div class="calendar-wrapper">
+                <div class="calendar-legend">
+                    <span class="legend-label">Loss</span>
+                    <div class="legend-scale">
+                        <div class="legend-box" style="background:var(--clr-loss-heavy)"></div>
+                        <div class="legend-box" style="background:var(--clr-loss-light)"></div>
+                        <div class="legend-box" style="background:var(--clr-neutral)"></div>
+                        <div class="legend-box" style="background:var(--clr-win-light)"></div>
+                        <div class="legend-box" style="background:var(--clr-win-heavy)"></div>
+                    </div>
+                    <span class="legend-label">Win</span>
+                </div>
+                <div class="calendar-grid" id="calendarGrid">
+                    <div class="cal-day-header">Mon</div>
+                    <div class="cal-day-header">Tue</div>
+                    <div class="cal-day-header">Wed</div>
+                    <div class="cal-day-header">Thu</div>
+                    <div class="cal-day-header">Fri</div>
+                    <div class="cal-day-header">Sat</div>
+                    <div class="cal-day-header">Sun</div>
+                </div>
+                <div class="calendar-summary" id="calendarSummary"></div>
+            </div>
+        </section>
+
+        <!-- Journal View -->
+        <section class="view" id="journalView">
+            <div class="view-header">
+                <div>
+                    <h1>Journal</h1>
+                    <p class="view-subtitle">Your trading notes and reflections</p>
+                </div>
+                <button class="btn btn-primary" id="addJournalBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    New Entry
+                </button>
+            </div>
+
+            <div class="journal-list" id="journalList">
+                <div class="empty-state" id="emptyJournal">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"
+                        opacity="0.25">
+                        <path d="M12 20h9" />
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                    </svg>
+                    <p>No journal entries yet</p>
+                    <button class="btn btn-primary" id="addJournalBtn2">Write Your First Entry</button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Trade Modal -->
+    <div class="modal-overlay" id="tradeModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="tradeModalTitle">Log Trade</h2>
+                <button class="modal-close" id="tradeModalClose">&times;</button>
+            </div>
+            <form id="tradeForm">
+                <input type="hidden" id="tradeId">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="tradeInstrument">Instrument</label>
+                        <select id="tradeInstrument" required>
+                            <option value="">Select...</option>
+                            <option value="MNQ">MNQ - Micro E-mini Nasdaq</option>
+                            <option value="MES">MES - Micro E-mini S&P</option>
+                            <option value="MYM">MYM - Micro E-mini Dow</option>
+                            <option value="M2K">M2K - Micro E-mini Russell</option>
+                            <option value="MCL">MCL - Micro Crude Oil</option>
+                            <option value="MGC">MGC - Micro Gold</option>
+                            <option value="MHG">MHG - Micro Copper</option>
+                            <option value="SIL">SIL - Micro Silver</option>
+                            <option value="MBT">MBT - Micro Bitcoin</option>
+                            <option value="MET">MET - Micro Ether</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="tradeDirection">Direction</label>
+                        <div class="direction-toggle">
+                            <button type="button" class="dir-btn active" data-dir="long">Long</button>
+                            <button type="button" class="dir-btn" data-dir="short">Short</button>
+                        </div>
+                        <input type="hidden" id="tradeDirection" value="long">
+                    </div>
+                    <div class="form-group">
+                        <label for="tradeEntry">Entry Price</label>
+                        <input type="number" id="tradeEntry" step="any" required placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="tradeExit">Exit Price</label>
+                        <input type="number" id="tradeExit" step="any" required placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="tradeQty">Quantity</label>
+                        <input type="number" id="tradeQty" min="1" value="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="tradeFees">Fees ($)</label>
+                        <input type="number" id="tradeFees" step="0.01" value="0.62" placeholder="0.62">
+                    </div>
+                    <div class="form-group">
+                        <label for="tradeDate">Date</label>
+                        <input type="date" id="tradeDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="tradeTime">Time</label>
+                        <input type="time" id="tradeTime">
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="tradeSetup">Setup Type</label>
+                        <select id="tradeSetup">
+                            <option value="">Select setup...</option>
+                            <option value="Breakout">Breakout</option>
+                            <option value="Breakdown">Breakdown</option>
+                            <option value="Pullback">Pullback</option>
+                            <option value="Trend Following">Trend Following</option>
+                            <option value="Reversal">Reversal</option>
+                            <option value="Range Play">Range Play</option>
+                            <option value="Scalp">Scalp</option>
+                            <option value="News Reaction">News Reaction</option>
+                            <option value="Opening Play">Opening Play</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="tradeTags">Tags</label>
+                        <input type="text" id="tradeTags"
+                            placeholder="e.g. A+ setup, revenge trade, FOMC (comma separated)">
+                    </div>
+                    <div class="form-group full-width">
+                        <label>Execution Rating</label>
+                        <div class="star-rating" id="starRating">
+                            <button type="button" class="star" data-rating="1">&#9733;</button>
+                            <button type="button" class="star" data-rating="2">&#9733;</button>
+                            <button type="button" class="star" data-rating="3">&#9733;</button>
+                            <button type="button" class="star" data-rating="4">&#9733;</button>
+                            <button type="button" class="star" data-rating="5">&#9733;</button>
+                        </div>
+                        <input type="hidden" id="tradeRating" value="0">
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="tradeEmotion">Emotional State</label>
+                        <div class="emotion-select" id="emotionSelect">
+                            <button type="button" class="emotion-btn" data-emotion="confident" title="Confident">
+                                <span class="emotion-icon">😎</span><span>Confident</span>
+                            </button>
+                            <button type="button" class="emotion-btn" data-emotion="calm" title="Calm">
+                                <span class="emotion-icon">😌</span><span>Calm</span>
+                            </button>
+                            <button type="button" class="emotion-btn" data-emotion="neutral" title="Neutral">
+                                <span class="emotion-icon">😐</span><span>Neutral</span>
+                            </button>
+                            <button type="button" class="emotion-btn" data-emotion="anxious" title="Anxious">
+                                <span class="emotion-icon">😰</span><span>Anxious</span>
+                            </button>
+                            <button type="button" class="emotion-btn" data-emotion="fomo" title="FOMO">
+                                <span class="emotion-icon">😫</span><span>FOMO</span>
+                            </button>
+                            <button type="button" class="emotion-btn" data-emotion="tilted" title="Tilted">
+                                <span class="emotion-icon">🤯</span><span>Tilted</span>
+                            </button>
+                        </div>
+                        <input type="hidden" id="tradeEmotion" value="">
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="tradeNotes">Notes</label>
+                        <textarea id="tradeNotes" rows="3" placeholder="What happened? What did you learn?"></textarea>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-ghost" id="tradeCancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="tradeSubmit">Save Trade</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Journal Modal -->
+    <div class="modal-overlay" id="journalModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="journalModalTitle">New Journal Entry</h2>
+                <button class="modal-close" id="journalModalClose">&times;</button>
+            </div>
+            <form id="journalForm">
+                <input type="hidden" id="journalId">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="journalDate">Date</label>
+                        <input type="date" id="journalDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="journalTitle">Title</label>
+                        <input type="text" id="journalTitle" required
+                            placeholder="e.g. Pre-market prep, End of day review">
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="journalContent">Content</label>
+                        <textarea id="journalContent" rows="8" required
+                            placeholder="Write your thoughts, observations, lessons learned..."></textarea>
+                    </div>
+                    <div class="form-group full-width">
+                        <label for="journalMood">Overall Mood</label>
+                        <div class="emotion-select" id="journalMoodSelect">
+                            <button type="button" class="emotion-btn" data-emotion="great" title="Great">
+                                <span class="emotion-icon">🔥</span><span>Great</span>
+                            </button>
+                            <button type="button" class="emotion-btn" data-emotion="good" title="Good">
+                                <span class="emotion-icon">😊</span><span>Good</span>
+                            </button>
+                            <button type="button" class="emotion-btn" data-emotion="okay" title="Okay">
+                                <span class="emotion-icon">😐</span><span>Okay</span>
+                            </button>
+                            <button type="button" class="emotion-btn" data-emotion="bad" title="Bad">
+                                <span class="emotion-icon">😤</span><span>Bad</span>
+                            </button>
+                        </div>
+                        <input type="hidden" id="journalMood" value="">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-ghost" id="journalCancel">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Entry</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Confirm Modal -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal modal-small">
+            <div class="modal-header">
+                <h2>Delete Trade</h2>
+                <button class="modal-close" id="deleteModalClose">&times;</button>
+            </div>
+            <p class="delete-msg">Are you sure you want to delete this trade? This cannot be undone.</p>
+            <div class="form-actions">
+                <button class="btn btn-ghost" id="deleteCancel">Cancel</button>
+                <button class="btn btn-danger" id="deleteConfirm">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
